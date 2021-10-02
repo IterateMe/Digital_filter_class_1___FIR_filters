@@ -7,6 +7,7 @@ from multipledispatch import dispatch
 
 matplotlib.use('TkAgg')
 
+
 @dispatch(str, np.ndarray, str, np.ndarray, str)
 def show(title,
          x_array, x_label,
@@ -16,6 +17,7 @@ def show(title,
     plt.ylabel(y_label)
     plt.title(title)
     plt.show()
+
 
 @dispatch(str, np.ndarray, str, np.ndarray, str, np.ndarray, str)
 def show(title,
@@ -34,6 +36,7 @@ def show(title,
 
     fig.suptitle(title)
     plt.show()
+
 
 @dispatch(str, np.ndarray, str, np.ndarray, str, np.ndarray, str, np.ndarray, str)
 def show(title,
