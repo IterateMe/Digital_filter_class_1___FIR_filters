@@ -10,39 +10,45 @@ class Signal_data():
         self.name = name
 
         self.wav = wf.read(source_file)
-        self.time_array = np.array(self.wav[1], dtype=float)
         self.datarate = self.wav[0]
+        self.time_y = np.array(self.wav[1], dtype=float)
         print("Data Rate = {}".format(self.datarate))
 
-        self.x = np.array( [i for i in range(len(self.time_array))] )
-        self.y = np.array(self.time_array)
+        self.x = np.array([i for i in range(len(self.time_y))])
 
-        self.freq= np.fft.fft(self.y)
-        self.freq_length = len(self.freq)
-
-        self.freq_norm = np.array([i for i in range(0, 2, len(self.time_array))])
-        self.freq_redressed = np.abs(self.time_array)
+        self.freq = np.fft.fft(self.time_y)
+        self.freqDb = np.log10(np.fft.fft(self.time_y))*20
+        print(self.freqDb)
+        self.freq_norm = np.array([2*math.pi*i/len(self.time_y) for i in range(len(self.time_y))])
+        self.freq_redressed = np.abs(self.time_y)
 
 
     def show_freq_amp(self):
-        title = "Transformée de fourier de {}".format(self.name)
+        title = "Transformée de fourier du signal {}".format(self.name)
+
         vis.show(title,
                  self.x, "Temps (s)",
-                 self.y, "Amplitude",
-                 self.x, "m",
-                 np.abs(self.freq), "Freq (rad)")
+                 self.time_y, "Amplitude",
+                 self.x[0:len(self.x)//2], "m",
+                 np.abs(self.freqDb[0:len(self.x)//2]), "Freq (rad)")
 
     def show_freq_angle(self):
-        pass
+        title = "Déphasage du signal {}".format(self.name)
+        vis.show(title,
+                 self.x, "Temps (s)",
+                 self.time_y, "Amplitude",
+                 self.x, "m",
+                 np.angle(self.freq), "Déphasage (rad)")
 
     def show_freq_normalized(self):
-        pass
+        vis.show("Valeurs de la fréquence normalisée de {} en fonction de son index".format(self.name),
+                 self.x, "Index",
+                 self.freq_norm, "Valeur (rad)")
 
     def show_enveloppe_temp(self):
-        # vis.show("Signal redressé de {}".format(self.name),
-        #          self.x, "Temps (s)",
-        #          self.freq_redressed, "Amplitude")
-        print(len(self.freq_redressed))
-        print([i for i in range(0, 2, len(self.time_array))])
+        vis.show("Enveloppe du signal {}".format(self.name),
+                 self.x, "Temps (s)",
+                 self.freq_norm, "Amplitude")
+
 
 
