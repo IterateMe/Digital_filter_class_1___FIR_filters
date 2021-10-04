@@ -6,8 +6,9 @@ source_basson = "signals\\note_basson_plus_sinus_1000_Hz.wav"
 
 if __name__ == '__main__':
     print("Starting program . . .\n")
-    #guit = SD("LaD a la Guitare", source_guit, (8481, 8860), 5)
+    guit = SD("LaD a la Guitare", source_guit)
+    guit.generate_fft(8481, 8860)
     #guit.show_freq_amp()
     #guit.show_enveloppe_temp()
-    basson = SD("Basson", source_basson, True)
+    #basson = SD("Basson", source_basson, True)
 
