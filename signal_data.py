@@ -21,13 +21,15 @@ class Signal_data():
         self.time_x = np.array([i for i in range(len(self.time_y))])  # Index des valeurs du fichier
 
         # Creer les array necessaires au traitement de signal
-        self.fft_win = None
-        self.freq = None    #will contain imaginary part
+        self.fft_win = None     #Fenetre du signal temporel analyser pour generer la fft
+        self.freq = None        #will contain imaginary part
         self.angle = None
         self.freqDb = None
         self.freq_norm = np.array([2*math.pi*i/self.datarate for i in range(self.datarate)])
         self.enveloppe = None
         self.main_sin = None
+
+        self.notes_dict = None
 
 
     def generate_fft(self, start, end):
@@ -38,15 +40,16 @@ class Signal_data():
         self.freqDb = np.log10(np.abs(self.freq)) * 20
 
         self.extract_main_sin(5)
+        self.generate_enveloppe()
 
     def extract_main_sin(self, amp_diff):
         print("Extracting main sin for {} . . .".format(self.name))
 
         N = (self.fft_win[1] - self.fft_win[0])
         ref_freq = self.time_x[0:N // 2] * self.datarate / N
-        main_sin_index = []
-        main_sin_freq = []
-        main_sin_amp = []
+        main_sin_index  = []
+        main_sin_freq   = []
+        main_sin_amp    = []
         for i in range(1, len(self.freqDb)//2 - 1):
             if (self.freqDb[i] > self.freqDb[i-1] + amp_diff) and ( self.freqDb[i] > self.freqDb[i+1] + amp_diff ):
                 main_sin_index.append(i)
@@ -60,22 +63,60 @@ class Signal_data():
         self.main_sin = (main_sin_index, main_sin_freq, main_sin_amp)
 
     def generate_enveloppe(self):
+        print("Generating enveloppe")
         freq_redressed = abs(self.time_y)
         x, filtre, f = FIR.averager(882, 44100)
-        self.enveloppe = np.convolve(filtre, freq_redressed)
+        enveloppe = np.convolve(filtre, freq_redressed)
+        enveloppe = enveloppe[0:-self.datarate + 1]
 
+        self.enveloppe = enveloppe * 2
 
-    def synthetize_signal(self):
-        #generate the sin wave for the duration of the original sample
-        synth_signal = []
+    def synthetize_signal(self, factor):
+        # generate the sin wave for the duration of the original sample
+        # print("enveloppe: ", self.enveloppe)
+        #
+        # print("Enveloppe : {}".format(len(self.enveloppe)))
+        # print("time_x: {}".format(len(self.time_x)))
+        # print("diff = {}".format( len(self.enveloppe) - len(self.time_x)))
+
+        synth_signal = [0 for i in self.time_x]
         for n in self.time_x:
-            for i in self.main_sin[0]:
-                m =
-                synth_signal[n] += math.sin(2*math.pi)
+            for i in range(len(self.main_sin[0])):
+                amp = np.abs(self.freq[self.main_sin[0][i]])
+                t = n/self.datarate
+                f = (self.main_sin[1][i])*factor
+                dephasage = np.angle(self.freq[self.main_sin[0][i]])
+                synth_signal[n] += amp * math.sin(2*math.pi*t*f + dephasage)
+
+        # normaliser l amplitude sur une valeur max de 1
+        biggest = max(synth_signal)
+
+        # multiply by the values of the enveloppe
+        print("Multiply with enveloppe . . .")
+        synth_signal = np.multiply(synth_signal, self.enveloppe)
+        return synth_signal / biggest
+
+    def generate_wave_file(self):
+        # generate wav file
+        print("\n\nGenerating WAV file . . .\n\n")
+        for note in self.notes_dict.keys():
+            print("Generation de {}".format(note))
+            wf.write("{}.wav".format(note), 44100, np.int16(self.notes_dict[note]))
+
+    def generate_notes(self):
+        print("\n\nGenerating notes . . .")
+        notes = {}
+        nom = ["Do", "DoD", "Re", "ReD", "Mi", "Fa", "FaD", "Sol", "SolD", "La", "LaD", "Si"]
+        facteur = [2**(k/12) for k in range(-9, 2+1)]
+        for i in range(len(nom)):
+            print("Synthetising {}".format(nom[i]))
+            notes[nom[i]] = self.synthetize_signal(facteur[i])
+        self.notes_dict = notes
 
 
-        #multiply by the values of the enveloppe
-        pass
+    def show_synth_signal(self):
+        plt.plot(self.synth_signal_source)
+        plt.show()
 
     def show_freq_amp(self):
         title = "Transformée de fourier du signal {}".format(self.name)
