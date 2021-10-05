@@ -106,10 +106,10 @@ class Signal_data():
 
     def generate_bethoven(self, guit=False):
         start = 20000
-        end = 44100 + 20000
+        end = 44100 + start
         if guit:
-            start = 0
-            end = 0
+            start = 8000
+            end = 44100 + start
 
         Sol = self.notes_dict["Sol"][start:end]
         MiB = self.notes_dict["ReD"][start:end]
@@ -174,7 +174,7 @@ class Signal_data():
 
 
     def show_freq_amp(self):
-        title = "{} : Transformée de fourier du La dièze)".format(self.name)
+        title = "{} : Transformée de fourier du La dièze".format(self.name)
         x_label_time = "Temps (s)"
         y_label_time = "Amplitude"
         x_label_freq = "Freq (Hz)"
@@ -183,9 +183,10 @@ class Signal_data():
         N = len(self.freqDb)
 
         freq_array = np.array([i*self.datarate/N for i in range(N//2)])
+        time_array = np.array([i/self.datarate for i in range(len(self.time_y))])
 
         fig, axs = plt.subplots(2)
-        axs[0].stem(self.time_y)
+        axs[0].plot(time_array, self.time_y)
         axs[0].set_xlabel(x_label_time)
         axs[0].set_ylabel(y_label_time)
         axs[1].stem(freq_array, self.freqDb[0:N//2])
