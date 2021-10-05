@@ -71,6 +71,14 @@ class Signal_data():
 
         self.enveloppe = enveloppe * 2
 
+    def nettoyer_signal(self):
+        repeat = 5
+        filtre = FIR.coupe_bande(6000)
+        signal = self.time_y
+        for i in range(repeat):
+            signal = np.convolve(signal, filtre)
+        self.time_y = signal
+
     def synthetize_signal(self, factor):
         # generate the sin wave for the duration of the original sample
         # print("enveloppe: ", self.enveloppe)

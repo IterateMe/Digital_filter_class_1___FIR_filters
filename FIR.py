@@ -10,18 +10,28 @@ def averager(ones, k): #passe bas h(k) coeffficients egaux
     signal_freq = np.fft.fft(signal_y)
     return signal_x, signal_y, signal_freq
 
-def passe_bas(N, mc):
-    K = (2*mc) + 1
-    h_0_ = K/N
-    h_n_ = np.array([ math.sin( math.pi*n*K/N )/math.sin( math.pi*n/N )for n in range(1, N) ]) * 1/N
-    h_n_ = np.insert( h_n_, 0, h_0_)
-    return h_n_
+def coupe_bande(p):
+    fe = 44100
+    fc0 = 1000
+    fc1 = 40
 
-def coupe_bande():
-    pass
+    mc = fc1 / fe * p
+    k = mc * 2 + 1
+
+    omega0 = 2 * math.pi * fc0 / fe
+
+    dirac = [ 1 if n == 0 else 0 for n in range(-p//2, p//2) ]
+    hlp = [ k/p if n == 0 else (1 / p) * (math.sin(math.pi * n * k / p)) / (math.sin(math.pi * n / p)) for n in range(-p//2, p//2) ]
+    hbs = [ dirac[n] - 2 * hlp[n] * math.cos(n * omega0) for n in range(-p//2, p//2) ]
+
+    return hbs
 
 if __name__ == '__main__':
     matplotlib.use('TkAgg')
-    x,y,f = averager(882, 44100)
-    plt.plot(np.log10(np.abs(f))*20)
+    # x,y,f = averager(882, 44100)
+    # plt.plot(np.log10(np.abs(f))*20)
+    # plt.show()
+
+    filtre = coupe_bande(6000)
+    plt.plot(20*np.log10(np.abs(np.fft.fft(filtre))))
     plt.show()
