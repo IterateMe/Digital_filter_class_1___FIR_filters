@@ -61,7 +61,7 @@ class Signal_data():
         self.main_sin = (main_sin_index, main_sin_freq, main_sin_amp)
 
     def generate_enveloppe(self):
-        print("Generating enveloppe")
+        print("Generating enveloppe . . .")
         freq_redressed = abs(self.time_y)
         x, filtre, f = FIR.averager(884, self.datarate+1)
         enveloppe = np.convolve(filtre, freq_redressed)
@@ -79,12 +79,6 @@ class Signal_data():
         self.time_y = signal[0:original_length]
 
     def synthetize_signal(self, factor):
-        # generate the sin wave for the duration of the original sample
-        # print("enveloppe: ", self.enveloppe)
-        #
-        # print("Enveloppe : {}".format(len(self.enveloppe)))
-        # print("time_x: {}".format(len(self.time_x)))
-        # print("diff = {}".format( len(self.enveloppe) - len(self.time_x)))
 
         synth_signal = [0 for i in self.time_x]
         for n in self.time_x:
@@ -100,7 +94,8 @@ class Signal_data():
 
         # multiply by the values of the enveloppe
         print("Multiply with enveloppe . . .")
-        synth_signal = np.multiply(synth_signal, self.enveloppe)
+        length = min(len(synth_signal), len(self.enveloppe))     #afin d'éviter les problèmes d'array incompatibles
+        synth_signal = np.multiply(synth_signal[0:length], self.enveloppe[0:length])
         return synth_signal / biggest
 
     def generate_single_note_wave_file(self, note):
@@ -109,8 +104,30 @@ class Signal_data():
         print("Generation de {}".format(note))
         wf.write("..\\{}_{}.wav".format(self.name, note), 44100, np.int16(self.notes_dict[note]))
 
-    def generate_bethoven(self):
-        pass
+    def generate_bethoven(self, guit=False):
+        start = 20000
+        end = 44100 + 20000
+        if guit:
+            start = 0
+            end = 0
+
+        Sol = self.notes_dict["Sol"][start:end]
+        MiB = self.notes_dict["ReD"][start:end]
+        Fa  = self.notes_dict["Fa"][start:end]
+        Re  = self.notes_dict["Re"][start:end]
+        silence = np.array([0 for i in range(end-start)])
+
+        result = np.concatenate( (Sol, Sol) )
+        result = np.concatenate((result, Sol))
+        result = np.concatenate((result, MiB))
+        result = np.concatenate((result, silence))
+        result = np.concatenate((result, Fa))
+        result = np.concatenate((result, Fa))
+        result = np.concatenate((result, Fa))
+        result = np.concatenate((result, Re))
+
+        wf.write("..\\Beth.wav", 44100, np.int16(result))
+        print("Bethoven generated\n")
 
     def generate_all_notes(self):
         print("\n\nGenerating notes . . .")
@@ -124,11 +141,36 @@ class Signal_data():
 
     def generate_Do_in_wav_for_validation(self, filename):  # faster than generating all notes
         facteur = 2**(-9/12)
-        print("\nSynthetising {} . . .".format("Do"))
+        print("\nSynthetising {} (Validation). . .".format("Do"))
         signal = self.synthetize_signal(facteur)
         print("Generating WAV file . . .")
-        wf.write("..\\{}_{}.wav".format(self.name, "Do_example"), 44100, np.int16(signal))
-        print("Signal generated\n")
+        wf.write("..\\{}.wav".format(filename), 44100, np.int16(signal))
+        print("WAV file generated\n")
+
+        matplotlib.use('TkAgg')
+        plt.plot(signal)
+        plt.show()
+
+        # print("Generating Bethoven . . .\n")
+        # offset = np.array([0 for i in range(11025)])
+        # note1 = signal
+        # note2 = np.concatenate((np.array([0 for i in range(11025*1)]), signal))
+        # note3 = np.concatenate((np.array([0 for i in range(11025*2)]), signal))
+        # note4 = np.concatenate((np.array([0 for i in range(11025*3)]), signal))
+        # signal_length = len(note4)
+        # note1 = np.concatenate( ( note1, np.array( [0 for i in range(signal_length-len(note1))] ) ) )
+        # note2 = np.concatenate( ( note2, np.array( [0 for i in range(signal_length-len(note2))] ) ) )
+        # note3 = np.concatenate( ( note3, np.array( [0 for i in range(signal_length-len(note3))] ) ) )
+        # note4 = np.concatenate( ( note4, np.array( [0 for i in range(signal_length-len(note4))] ) ) )
+        #
+        #
+        # result = np.add(note1,note2)
+        # result = np.add(result,note3)
+        # result = np.add(result,note4)
+        # result = result / 4
+        #
+        # wf.write("..\\Beth.wav".format(filename), 44100, np.int16(result))
+        # print("Bethoven generated\n")
 
 
     def show_freq_amp(self):

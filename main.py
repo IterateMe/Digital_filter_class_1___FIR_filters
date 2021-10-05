@@ -20,10 +20,13 @@ if __name__ == '__main__':
 
     basson = SD("Basson", source_basson)
     basson.nettoyer_signal()
-    #basson.generate_enveloppe()
+    basson.generate_enveloppe()
     #basson.show_enveloppe_temp()
     basson.generate_fft(47545, 49823)
     basson.extract_main_sin(2)
+    #basson.generate_Do_in_wav_for_validation("This_is_the_stuff")
+    basson.generate_all_notes()
+    basson.generate_bethoven()
     #basson.show_freq_amp()
 
     #wf.write("..\\{}.wav".format("Basson"), 44100, np.int16(basson.time_y))
