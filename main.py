@@ -8,9 +8,11 @@ source_basson = "signals\\note_basson_plus_sinus_1000_Hz.wav"
 
 if __name__ == '__main__':
     print("Starting program . . .\n")
-    #guit = SD("LaD a la Guitare", source_guit)
+    #guit = SD("Guitarre", source_guit)
+    #guit.generate_enveloppe()
     #guit.generate_fft(8481, 8860)
-    #guit.show_synth_signal()
+    #extract_main_sin(5)
+    #guit.show_enveloppe_temp()
     #guit.generate_notes()
     #guit.generate_wave_file()
     #guit.show_freq_amp()
@@ -18,6 +20,12 @@ if __name__ == '__main__':
 
     basson = SD("Basson", source_basson)
     basson.nettoyer_signal()
-    wf.write("{}.wav".format("Basson"), 44100, np.int16(basson.time_y))
-    print("fichier généré")
+    #basson.generate_enveloppe()
+    #basson.show_enveloppe_temp()
+    basson.generate_fft(47545, 49823)
+    basson.extract_main_sin(2)
+    #basson.show_freq_amp()
+
+    #wf.write("..\\{}.wav".format("Basson"), 44100, np.int16(basson.time_y))
+    #print("fichier généré")
 

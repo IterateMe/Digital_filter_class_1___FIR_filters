@@ -29,9 +29,35 @@ def coupe_bande(p):
 if __name__ == '__main__':
     matplotlib.use('TkAgg')
     # x,y,f = averager(882, 44100)
-    # plt.plot(np.log10(np.abs(f))*20)
+    # to_plot = np.log10(np.abs(f))*20
+    #
+    # fig, axs = plt.subplots(2)
+    # axs[0].plot(to_plot[0:22050])
+    # axs[0].set_xlabel("Fréquence (Hz)")
+    # axs[0].set_ylabel("Amplitude (Db)")
+    #
+    # axs[1].plot(np.array([20,21,22,23,24,25]),to_plot[20:26])
+    # axs[1].set_xlabel("Fréquence (Hz)")
+    # axs[1].set_ylabel("Amplitude (Db)")
+    #
+    # fig.suptitle("Réponse fréquencielle du filtre passe bas moyenneur")
     # plt.show()
 
     filtre = coupe_bande(6000)
-    plt.plot(20*np.log10(np.abs(np.fft.fft(filtre))))
+    fig, axs = plt.subplots(2)
+
+    start = 110
+    stop = 160
+    x_values = np.array([i + start + 1 for i in range(stop-start)])
+    to_plot_1 = 20*np.log10(np.abs(np.fft.fft(filtre)))
+    to_plot_2 = np.angle(np.fft.fft(filtre))
+
+    axs[0].plot(x_values, to_plot_1[start:stop])
+    axs[0].set_xlabel("Index m")
+    axs[0].set_ylabel("Amplitude (Db)")
+    axs[1].plot(x_values, to_plot_2[start:stop])
+    axs[1].set_xlabel("Index m")
+    axs[1].set_ylabel("Dephasage (rad)")
+
+    fig.suptitle("Réponse du filtre coupe bande")
     plt.show()

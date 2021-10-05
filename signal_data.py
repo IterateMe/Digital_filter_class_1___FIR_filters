@@ -39,17 +39,15 @@ class Signal_data():
         self.angle = np.angle(self.freq)
         self.freqDb = np.log10(np.abs(self.freq)) * 20
 
-        self.extract_main_sin(5)
-        self.generate_enveloppe()
-
     def extract_main_sin(self, amp_diff):
         print("Extracting main sin for {} . . .".format(self.name))
+        # amp_diff est la valeur de discrimination permettant de sélectionner les sinusoïdes ayant les plus forts maximums locaux
 
         N = (self.fft_win[1] - self.fft_win[0])
         ref_freq = self.time_x[0:N // 2] * self.datarate / N
-        main_sin_index  = []
-        main_sin_freq   = []
-        main_sin_amp    = []
+        main_sin_index  = [] # Contient la valeur de la m ieme frequence dans l'analyse de fourier
+        main_sin_freq   = [] # Contient les valeurs de fréquences réelles
+        main_sin_amp    = [] # Contient les valeurs d'amplitude correspondantes
         for i in range(1, len(self.freqDb)//2 - 1):
             if (self.freqDb[i] > self.freqDb[i-1] + amp_diff) and ( self.freqDb[i] > self.freqDb[i+1] + amp_diff ):
                 main_sin_index.append(i)
@@ -65,7 +63,7 @@ class Signal_data():
     def generate_enveloppe(self):
         print("Generating enveloppe")
         freq_redressed = abs(self.time_y)
-        x, filtre, f = FIR.averager(882, 44100)
+        x, filtre, f = FIR.averager(884, self.datarate+1)
         enveloppe = np.convolve(filtre, freq_redressed)
         enveloppe = enveloppe[0:-self.datarate + 1]
 
@@ -75,9 +73,10 @@ class Signal_data():
         repeat = 5
         filtre = FIR.coupe_bande(6000)
         signal = self.time_y
+        original_length = len(signal)
         for i in range(repeat):
             signal = np.convolve(signal, filtre)
-        self.time_y = signal
+        self.time_y = signal[0:original_length]
 
     def synthetize_signal(self, factor):
         # generate the sin wave for the duration of the original sample
@@ -104,14 +103,16 @@ class Signal_data():
         synth_signal = np.multiply(synth_signal, self.enveloppe)
         return synth_signal / biggest
 
-    def generate_wave_file(self):
+    def generate_single_note_wave_file(self, note):
         # generate wav file
         print("\n\nGenerating WAV file . . .\n\n")
-        for note in self.notes_dict.keys():
-            print("Generation de {}".format(note))
-            wf.write("{}.wav".format(note), 44100, np.int16(self.notes_dict[note]))
+        print("Generation de {}".format(note))
+        wf.write("..\\{}_{}.wav".format(self.name, note), 44100, np.int16(self.notes_dict[note]))
 
-    def generate_notes(self):
+    def generate_bethoven(self):
+        pass
+
+    def generate_all_notes(self):
         print("\n\nGenerating notes . . .")
         notes = {}
         nom = ["Do", "DoD", "Re", "ReD", "Mi", "Fa", "FaD", "Sol", "SolD", "La", "LaD", "Si"]
@@ -121,13 +122,17 @@ class Signal_data():
             notes[nom[i]] = self.synthetize_signal(facteur[i])
         self.notes_dict = notes
 
+    def generate_Do_in_wav_for_validation(self, filename):  # faster than generating all notes
+        facteur = 2**(-9/12)
+        print("\nSynthetising {} . . .".format("Do"))
+        signal = self.synthetize_signal(facteur)
+        print("Generating WAV file . . .")
+        wf.write("..\\{}_{}.wav".format(self.name, "Do_example"), 44100, np.int16(signal))
+        print("Signal generated\n")
 
-    def show_synth_signal(self):
-        plt.plot(self.synth_signal_source)
-        plt.show()
 
     def show_freq_amp(self):
-        title = "Transformée de fourier du signal {}".format(self.name)
+        title = "{} : Transformée de fourier du La dièze)".format(self.name)
         x_label_time = "Temps (s)"
         y_label_time = "Amplitude"
         x_label_freq = "Freq (Hz)"
@@ -149,22 +154,16 @@ class Signal_data():
         plt.show()
 
     def show_freq_angle(self):
-        title = "Déphasage du signal {}".format(self.name)
+        title = "{} : Déphasage du La dièze".format(self.name)
         vis.show(title,
                  self.time_x, "Temps (s)",
                  self.time_y, "Amplitude",
                  self.time_x, "m",
                  np.angle(self.freq), "Déphasage (rad)")
 
-    def show_freq_normalized(self):
-        vis.show("Valeurs de la fréquence normalisée de {} en fonction de son index".format(self.name),
-                 self.time_x, "Index",
-                 self.freq_norm, "Valeur (rad)")
-
     def show_enveloppe_temp(self):
-
-        vis.show("Enveloppe du signal {}".format(self.name),
-                 np.array([i for i in range(len(self.enveloppe))]), "Temps (s)",
+        vis.show("{} : Enveloppe du La dièze".format(self.name),
+                 np.array([i for i in range(len(self.enveloppe))]) / self.datarate, "Temps (s)",
                  self.enveloppe, "Amplitude",
-                 self.time_x, "Temps (s)",
+                 self.time_x / self.datarate, "Temps (s)",
                  self.time_y, "Amplitude")
