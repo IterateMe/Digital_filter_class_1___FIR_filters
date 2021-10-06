@@ -4,25 +4,26 @@ import numpy as np
 from scipy import signal
 import math
 
-def averager(ones, k): #passe bas h(k) coeffficients egaux
+def averager(ordre, k): #passe bas h(k) coeffficients egaux
+    # La valeur k représente la longueru finale de l'array du filtre
     signal_x = np.array([i for i in range(k)])
-    signal_y = np.array([1 if i<=ones else 0 for i in range(k)]) * (1/ones)
+    signal_y = np.array([1 if i <= ordre else 0 for i in range(k)]) * (1 / ordre)
     signal_freq = np.fft.fft(signal_y)
     return signal_x, signal_y, signal_freq
 
-def coupe_bande(p):
+def coupe_bande(ordre):
     fe = 44100
     fc0 = 1000
     fc1 = 40
 
-    mc = fc1 / fe * p
+    mc = fc1 / fe * ordre
     k = mc * 2 + 1
 
     omega0 = 2 * math.pi * fc0 / fe
 
-    dirac = [ 1 if n == 0 else 0 for n in range(-p//2, p//2) ]
-    hlp = [ k/p if n == 0 else (1 / p) * (math.sin(math.pi * n * k / p)) / (math.sin(math.pi * n / p)) for n in range(-p//2, p//2) ]
-    hbs = [ dirac[n] - 2 * hlp[n] * math.cos(n * omega0) for n in range(-p//2, p//2) ]
+    dirac = [1 if n == 0 else 0 for n in range(-ordre // 2, ordre // 2)]
+    hlp = [k / ordre if n == 0 else (1 / ordre) * (math.sin(math.pi * n * k / ordre)) / (math.sin(math.pi * n / ordre)) for n in range(-ordre // 2, ordre // 2)]
+    hbs = [dirac[n] - 2 * hlp[n] * math.cos(n * omega0) for n in range(-ordre // 2, ordre // 2)]
 
     return hbs
 

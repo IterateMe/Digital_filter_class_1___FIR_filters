@@ -8,10 +8,34 @@ source_basson = "signals\\note_basson_plus_sinus_1000_Hz.wav"
 source_sin = "signals\\sin_1000Hz.wav"
 
 def basson():
+    start = 0
+    end =  44100*3
+    diff = end - start
+    print(diff)
     basson = SD("Basson", source_basson)
-    basson.generate_fft(47545, 49823)
+    basson.generate_fft(start, end)
+    phase_avant = basson.angle
+    Db_avant = basson.freqDb
 
     basson.nettoyer_signal()
+    basson.generate_fft(start, end)
+    phase_apres = basson.angle
+    Db_apres = basson.freqDb
+
+    x_values = np.array( [ i * (44100/diff) for i in range(diff//20) ] )
+
+    fig, axs = plt.subplots(2)
+    axs[0].plot(x_values, Db_avant[0:diff//20])
+    axs[0].set_xlabel("Fréquence (Hz)")
+    axs[0].set_ylabel("Amplitude (Db)")
+
+    axs[1].plot(x_values, Db_apres[0:diff//20])
+    axs[1].set_xlabel("Fréquence (Hz)")
+    axs[1].set_ylabel("Amplitude (Db)")
+
+    fig.suptitle("Réponse fréquencielle avant et après le filtrage du basson")
+    plt.show()
+
     # basson.generate_enveloppe()
     # basson.show_enveloppe_temp()
     #
@@ -25,8 +49,8 @@ def basson():
     # basson.generate_bethoven()
 
     # Genere le fichier .wav du signal
-    wf.write("..\\{}.wav".format("Thats the good stuff"), 44100, np.int16(basson.time_y))
-    print("fichier généré")
+    # wf.write("..\\{}.wav".format("Thats the good stuff"), 44100, np.int16(basson.time_y))
+    # print("fichier généré")
 
 def guit():
     guit = SD("Guitarre", source_guit)
@@ -73,6 +97,6 @@ def sin():
 if __name__ == '__main__':
     print("Starting program . . .\n")
     #basson()
-    #guit()
-    sin()
+    #$guit()
+    #sin()
 

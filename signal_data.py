@@ -29,10 +29,12 @@ class Signal_data():
         self.enveloppe = None
         self.main_sin = None
 
+        # Va contenir le signal temporel de toutes les notes, les notes sont les clés du hasmap
         self.notes_dict = None
 
 
     def generate_fft(self, start, end):
+        # Génère la fft à partir d'une portion temporelle du signal pré-choisis
         print ("Generating fft for {} . . .".format(self.name))
         self.fft_win = (start, end)
         self.freq = np.fft.fft(self.time_y[start:end])
@@ -99,12 +101,13 @@ class Signal_data():
         return synth_signal / biggest
 
     def generate_single_note_wave_file(self, note):
-        # generate wav file
+        # generate wav file - Ne fonctionne que si la méthode generate_all_notes() a ete appele avant
         print("\n\nGenerating WAV file . . .\n\n")
         print("Generation de {}".format(note))
         wf.write("..\\{}_{}.wav".format(self.name, note), 44100, np.int16(self.notes_dict[note]))
 
     def generate_bethoven(self, guit=False):
+        # Selection de la portion du signal temporel sera utilié pour une seconde
         start = 20000
         end = 44100 + start
         if guit:
