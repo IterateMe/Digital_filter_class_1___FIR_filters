@@ -139,17 +139,15 @@ class Signal_data():
             notes[nom[i]] = self.synthetize_signal(facteur[i])
         self.notes_dict = notes
 
-    def generate_Do_in_wav_for_validation(self, filename):  # faster than generating all notes
-        facteur = 2**(-9/12)
-        print("\nSynthetising {} (Validation). . .".format("Do"))
+    def generate_LaD_in_wav_for_validation(self, filename):  # faster than generating all notes
+        facteur = 1
+        print("\nSynthetising {} (Validation). . .".format("LaD"))
         signal = self.synthetize_signal(facteur)
         print("Generating WAV file . . .")
         wf.write("..\\{}.wav".format(filename), 44100, np.int16(signal))
         print("WAV file generated\n")
 
-        matplotlib.use('TkAgg')
-        plt.plot(signal)
-        plt.show()
+
 
         # print("Generating Bethoven . . .\n")
         # offset = np.array([0 for i in range(11025)])
