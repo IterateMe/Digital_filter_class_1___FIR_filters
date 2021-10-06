@@ -44,20 +44,26 @@ if __name__ == '__main__':
     # plt.show()
 
     filtre = coupe_bande(6000)
-    fig, axs = plt.subplots(2)
+    #fig, axs = plt.subplots(2)
 
-    start = 110
-    stop = 160
-    x_values = np.array([i + start + 1 for i in range(stop-start)])
-    to_plot_1 = 20*np.log10(np.abs(np.fft.fft(filtre)))
-    to_plot_2 = np.angle(np.fft.fft(filtre))
+    time_x = np.array([i/44.1 for i in range(6000)])
+    plt.plot(time_x, filtre)
+    plt.xlabel("Temps (ms)")
+    plt.ylabel("Amplitude")
+    plt.title("Réponse temporelle du filtre pour Fe de 44100 Hz")
 
-    axs[0].plot(x_values, to_plot_1[start:stop])
-    axs[0].set_xlabel("Index m")
-    axs[0].set_ylabel("Amplitude (Db)")
-    axs[1].plot(x_values, to_plot_2[start:stop])
-    axs[1].set_xlabel("Index m")
-    axs[1].set_ylabel("Dephasage (rad)")
-
-    fig.suptitle("Réponse du filtre coupe bande")
+    # start = 110
+    # stop = 160
+    # x_values = np.array([i + start + 1 for i in range(stop-start)])
+    # to_plot_1 = 20*np.log10(np.abs(np.fft.fft(filtre)))
+    # to_plot_2 = np.angle(np.fft.fft(filtre))
+    #
+    # axs[0].plot(x_values, to_plot_1[start:stop])
+    # axs[0].set_xlabel("Index m")
+    # axs[0].set_ylabel("Amplitude (Db)")
+    # axs[1].plot(x_values, to_plot_2[start:stop])
+    # axs[1].set_xlabel("Index m")
+    # axs[1].set_ylabel("Dephasage (rad)")
+    #
+    # fig.suptitle("Réponse du filtre coupe bande")
     plt.show()
